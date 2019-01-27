@@ -19,6 +19,7 @@ from __future__ import print_function
 
 import PyKCS11.LowLevel
 import os
+import struct
 import sys
 
 
@@ -658,8 +659,12 @@ class PyKCS11Lib(object):
             raise PyKCS11Error(rv)
 
         m = []
+        is_32_bit_int = struct.calcsize('i') == 4  # bytes
+
         for x in range(len(mechanismList)):
             mechanism = mechanismList[x]
+            if (mechanism < 0) and is_32_bit_int:
+                mechanism = (-mechanism - 1) ^ (2**32 - 1)
             if mechanism >= CKM_VENDOR_DEFINED:
                 k = 'CKR_VENDOR_DEFINED_%X' % (mechanism - CKM_VENDOR_DEFINED)
                 CKM[k] = mechanism
